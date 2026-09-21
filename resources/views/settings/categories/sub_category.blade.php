@@ -1,6 +1,6 @@
 @if ($sub_category->sub_categories)
     @if ($loop->first)
-        <x-table.tr data-collapse="child-{{ $parent_category->id }}" data-animation class="relative flex items-center hover:bg-gray-100 px-1 group border-b transition-all collapse-sub" href="{{ $parent_category->row_url }}">
+        <x-table.tr data-collapse="child-{{ $parent_category->id }}" data-animation class="relative flex items-center hover:bg-gray-100 px-1 group border-b transition-all collapse-sub" href="{{ route('categories.edit', $parent_category->id) }}">
             <x-table.td kind="bulkaction">
                 <x-index.bulkaction.single id="{{ $parent_category->id }}" name="{{ $parent_category->name }}" disabled />
             </x-table.td>
@@ -20,13 +20,25 @@
                     <span class="material-icons text-3xl text-{{ $parent_category->color }}" style="color:{{ $parent_category->color }};">circle</span>
 
                     <div class="flex items-center font-bold table-submenu ltr:ml-2 rtl:mr-2">
-                        {{ $parent_category->name }}
+                        @if (! empty($parent_category->custom_row_url))
+                            <x-link href="{{ $parent_category->row_url }}" class="text-sm font-semibold sm:mt-0 sm:mb-0 leading-4" override="class">
+                                <x-link.hover color="to-black-400">
+                                    {{ $parent_category->name }}
+                                </x-link.hover>
+                            </x-link>
+                        @else
+                            {{ $parent_category->name }}
+                        @endif
                     </div>
-                </div>
 
-                @if (! $parent_category->enabled)
-                    <x-index.disable text="{{ trans_choice('general.categories', 1) }}" />
-                @endif
+                    @if (! $parent_category->enabled)
+                        <x-index.disable text="{{ trans_choice('general.categories', 1) }}" />
+                    @endif
+
+                    @if ($parent_category->isDefaultCategory())
+                        <x-index.default text="{{ trans('double-entry::general.default_type', ['type' => $parent_category->default_category_label]) }}" />
+                    @endif
+                </div>
             </x-table.td>
 
             <x-table.td class="{{ $name_class }} py-4 ltr:text-left rtl:text-right whitespace-nowrap text-sm font-normal text-black cursor-pointer truncate">
@@ -45,7 +57,11 @@
 
     <x-table.tr data-collapse="child-{{ $parent_category->id }}" data-animation class="relative flex items-center hover:bg-gray-100 px-1 group border-b transition-all collapse-sub" href="{{ $sub_category->row_url }}">
         <x-table.td kind="bulkaction">
-            <x-index.bulkaction.single id="{{ $sub_category->id }}" name="{{ $sub_category->name }}" />
+            <x-index.bulkaction.single
+                id="{{ $sub_category->id }}"
+                name="{{ $sub_category->name }}"
+                :disabled="$sub_category->isDefaultCategory()"
+            />
         </x-table.td>
 
         @if (!$hide_code_column)
@@ -72,20 +88,40 @@
                         </button>
                     </x-tooltip>
                     <div class="flex items-center font-bold  table-submenu">
-                        {{ $sub_category->name }}
+                        @if (! empty($sub_category->custom_row_url))
+                            <x-link href="{{ $sub_category->row_url }}" class="text-sm font-semibold sm:mt-0 sm:mb-0 leading-4" override="class">
+                                <x-link.hover color="to-black-400">
+                                    {{ $sub_category->name }}
+                                </x-link.hover>
+                            </x-link>
+                        @else
+                            {{ $sub_category->name }}
+                        @endif
                     </div>
                 @else
                     <span class="material-icons text-3xl text-{{ $sub_category->color }}" style="color:{{ $sub_category->color }};">circle</span>
 
                     <div class="flex items-center font-bold table-submenu ltr:ml-2 rtl:mr-2">
-                        {{ $sub_category->name }}
+                        @if (! empty($sub_category->custom_row_url))
+                            <x-link href="{{ $sub_category->row_url }}" class="text-sm font-semibold sm:mt-0 sm:mb-0 leading-4" override="class">
+                                <x-link.hover color="to-black-400">
+                                    {{ $sub_category->name }}
+                                </x-link.hover>
+                            </x-link>
+                        @else
+                            {{ $sub_category->name }}
+                        @endif
                     </div>
                 @endif
-            </div>
 
-            @if (! $sub_category->enabled)
-                <x-index.disable text="{{ trans_choice('general.categories', 1) }}" />
-            @endif
+                @if (! $sub_category->enabled)
+                    <x-index.disable text="{{ trans_choice('general.categories', 1) }}" />
+                @endif
+
+                @if ($sub_category->isDefaultCategory())
+                    <x-index.default text="{{ trans('double-entry::general.default_type', ['type' => $sub_category->default_category_label]) }}" />
+                @endif
+            </div>
         </x-table.td>
 
         <x-table.td class="{{ $name_class }} py-4 ltr:text-left rtl:text-right whitespace-nowrap text-sm font-normal text-black cursor-pointer truncate">

@@ -42,7 +42,7 @@ class Item extends FormRequest
 
         return [
             'type'              => 'required|string|in:product,service',
-            'name'              => 'required|string',
+            'name'              => 'required|string|max:255',
             'sale_price'        => $sale_price . '|regex:/^(?=.*?[0-9])[0-9.,]+$/',
             'purchase_price'    => $purchase_price . '|regex:/^(?=.*?[0-9])[0-9.,]+$/',
             'tax_ids'           => 'nullable|array',

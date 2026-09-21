@@ -158,7 +158,7 @@ return [
     App\Models\Banking\Transaction::class => [
         'columns' => [
             'id',
-            'number',
+            'number' => ['searchable' => true],
             'type' => [
                 'values' => [
                     'income' => 'general.incomes',
@@ -184,7 +184,7 @@ return [
             ],
             'description' => ['searchable' => true],
             'payment_method',
-            'reference',
+            'reference' => ['searchable' => true],
             'category_id' => [
                 'route' => ['categories.index', 'search=type:' . Category::INCOME_TYPE . ',' . Category::EXPENSE_TYPE . ',' . Category::DIRECT_COST_TYPE . ' enabled:1'],
                 'fields' => [

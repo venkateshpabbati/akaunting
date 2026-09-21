@@ -16,6 +16,7 @@ use App\Traits\Transactions;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Support\Facades\Lang;
 
 class Category extends Model
 {
@@ -30,6 +31,17 @@ class Category extends Model
     protected $table = 'categories';
 
     protected $appends = ['display_name', 'color_hex_code', 'title'];
+
+    protected const DEFAULT_CATEGORY_LABELS = [
+        'income_category' => 'sales',
+        'expense_category' => 'expenses',
+        'categories_receivable' => 'receivable',
+        'categories_payable' => 'payable',
+        'categories_sales_discount' => 'sales_discount',
+        'categories_purchase_discount' => 'purchase_discount',
+        'categories_owners_contribution' => 'owners_contribution',
+        'categories_payroll' => 'payroll',
+    ];
 
     /**
      * Attributes that should be mass-assignable.
@@ -336,6 +348,43 @@ class Category extends Model
         return $this->title . ' (' . $typeName . ')';
     }
 
+    public function isDefaultCategory(): bool
+    {
+        return in_array($this->id, array_filter(array_map(
+            fn ($setting) => setting('default.' . $setting),
+            array_keys(self::DEFAULT_CATEGORY_LABELS)
+        )));
+    }
+
+    public function getDefaultCategoryLabelAttribute(): ?string
+    {
+        if (! $this->isDefaultCategory()) {
+            return null;
+        }
+
+        foreach (self::DEFAULT_CATEGORY_LABELS as $setting => $label) {
+            if ((int) setting('default.' . $setting) === (int) $this->id) {
+                foreach ([
+                    'double-entry::general.categories.' . $label,
+                    'categories.' . $label,
+                    'general.' . $label,
+                ] as $translation) {
+                    if (Lang::has($translation)) {
+                        $value = Lang::get($translation);
+
+                        return is_string($value) && str_contains($value, '|')
+                            ? trans_choice($translation, 2)
+                            : trans($translation);
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Get the balance of a category.
      *
@@ -445,7 +494,7 @@ class Category extends Model
             ],
         ];
 
-        if ($this->isTransferCategory()) {
+        if ($this->isTransferCategory() || $this->isDefaultCategory()) {
             return $actions;
         }
 

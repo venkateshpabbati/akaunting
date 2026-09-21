@@ -8,6 +8,23 @@ use Illuminate\Support\Str;
 class Widget extends FormRequest
 {
     /**
+     * Prepare the data for validation.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        parent::prepareForValidation();
+
+        // The widget edit modal always posts a "limit" field, even for widget
+        // types that don't use it, as an empty string. Normalize that to null
+        // so the "nullable" rule below actually exempts it from "integer".
+        if ($this->limit === '') {
+            $this->merge(['limit' => null]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array
@@ -19,6 +36,7 @@ class Widget extends FormRequest
             'name' => 'required|string',
             'class' => 'required',
             'sort' => 'integer',
+            'limit' => 'nullable|integer|min:1|max:50',
         ];
     }
 

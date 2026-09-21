@@ -195,6 +195,7 @@ return [
     'accounting'            => 'Accounting',
     'sort'                  => 'Sort',
     'width'                 => 'Width',
+    'limit'                 => 'Limit',
     'month'                 => 'Month',
     'year'                  => 'Year',
     'type_item_name'        => 'Type an item name',
