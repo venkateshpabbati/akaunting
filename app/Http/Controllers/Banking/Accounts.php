@@ -10,7 +10,6 @@ use App\Jobs\Banking\UpdateAccount;
 use App\Models\Banking\Account;
 use App\Models\Banking\Transaction;
 use App\Models\Banking\Transfer;
-use App\Utilities\Date;
 use App\Utilities\Reports;
 use App\Models\Setting\Currency;
 
@@ -259,13 +258,13 @@ class Accounts extends Controller
 
     public function seePerformance(Account $account)
     {
+        // No dates: the report opens on the current financial year
         $data = [
-            'year'          => Date::now()->year,
             'basis'         => 'accrual',
             'account_id'    => $account->id,
         ];
 
-        $report = Reports::getClassInstance('App\Reports\IncomeExpenseSummary');
+        $report = Reports::getClassInstance('App\Reports\IncomeExpenseSummary', false);
 
         if (empty($report) || empty($report->model)) {
             $message = trans('accounts.create_report');
@@ -275,7 +274,10 @@ class Accounts extends Controller
             return redirect()->route('reports.create');
         }
 
-        return redirect()->route('reports.show', $report->model->id)->withInput($data);
+        // In the search string rather than flashed, so refresh, print, reload and bookmarks keep the filter
+        $search = collect($data)->map(fn ($value, $key) => $key . ':' . $value)->implode(' ');
+
+        return redirect()->route('reports.show', ['report' => $report->model->id, 'search' => $search]);
     }
 
     public function currency()

@@ -292,6 +292,10 @@ export default {
             values: [],
             useRemoteSearchValues: false,
             multiple_values: [],
+
+            // Every value ever loaded for the current option, kept so a selection
+            // survives a remote search that replaces the visible list.
+            known_values: [],
             current_operator: '',
             current_value: null,
             show_date: false,
@@ -431,6 +435,8 @@ export default {
                             value: item.name
                         });
                     }, this);
+
+                    this.rememberValues();
 
                     this.option_values[value] = this.values;
                     this.useRemoteSearchValues = true;
@@ -608,6 +614,8 @@ export default {
                 this.onSetOptionValue(value, option_url, option_fields);
             } else {
                 this.values = (this.option_values[value]) ? this.option_values[value] : [];
+
+                this.rememberValues();
             }
 
             this.$nextTick(() => {
@@ -649,6 +657,8 @@ export default {
                         });
                     }
                 }, this);
+
+                this.rememberValues();
 
                 this.option_values[value] = this.values;
                 this.useRemoteSearchValues = false;
@@ -749,16 +759,29 @@ export default {
             this.search = '';
         },
 
+        rememberValues() {
+            this.values.forEach(function (value) {
+                if (! this.known_values.some(known => known.key == value.key)) {
+                    this.known_values.push(value);
+                }
+            }, this);
+        },
+
         onMultipleValueSelected() {
             this.show_close_icon = true;
             let select_values = [];
 
             this.onChangeSearchAndFilterText(this.enterPlaceholder, false);
 
-            for (let i = 0; i < this.values.length; i++) {
+            // Resolve against every value loaded for this option, not just the ones
+            // currently visible: a remote search replaces this.values with its own
+            // results, which would otherwise drop earlier selections.
+            let known_values = this.known_values.length ? this.known_values : this.values;
+
+            for (let i = 0; i < known_values.length; i++) {
                 this.multiple_values.forEach(function (value, index) {
-                    if (this.values[i].key == value) {
-                        select_values.push(this.values[i]);
+                    if (known_values[i].key == value) {
+                        select_values.push(known_values[i]);
                     }
                 }, this);
             }
@@ -796,6 +819,7 @@ export default {
             this.search = '';
 
             this.multiple_values = [];
+            this.known_values = [];
         },
 
         onValueDateRange() {

@@ -41,5 +41,12 @@ return [
     ],
 
     'percentage_of_income'          => 'Show % of Income',
+    'last_updated'                  => 'Last updated on :date at :time',
+
+    'applied_filters' => [
+        'dates'                     => ':start – :end',
+        'named_date'                => ':name (:date)',
+        'excluded'                  => 'is not :values',
+    ],
 
 ];
